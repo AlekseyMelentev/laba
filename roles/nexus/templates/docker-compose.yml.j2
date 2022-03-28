@@ -6,6 +6,8 @@ services:
     container_name: nexus
     restart: unless-stopped
     hostname: {{nexus_domain}}
+    ports:
+      - '8283:8283'
     volumes:
       - {{directory_deploy_volumes}}/nexus/nexus-data:/nexus-data
       - /etc/localtime:/etc/localtime:ro

@@ -42,6 +42,24 @@
     group: "{{ansible_ssh_group}}"
     mode: '0644'
 
+- name: Upload daemon.json to host
+  template:
+    src: "templates/daemon.json.j2"
+    dest: "/etc/docker/daemon.json"
+    owner: "{{ansible_ssh_user}}"
+    group: "{{ansible_ssh_group}}"
+    mode: '0644'
+  notify: Reload docker
+  become: true
+
+- name: Upload daemon.json
+  template:
+    src: "templates/daemon.json.j2"
+    dest: "{{directory_deploy_volumes}}/jenkins/daemon.json"
+    owner: "{{ansible_ssh_user}}"
+    group: "{{ansible_ssh_group}}"
+    mode: '0644'
+
 - name: Copy config.xml
   copy:
     src: files/config.xml
@@ -64,3 +82,44 @@
 
 - name: Restart nginx
   command: "docker restart nginx"
+  become: true
+
+- name: Pause play until a URL is reachable from this host
+  uri:
+    url: "http://{{jenkins_domain}}"
+    follow_redirects: none
+    method: GET
+  register: _result
+  until: _result.status == 200
+  retries: 30 # 30 * 5 seconds = 150secs
+  delay: 5 # Every 5 seconds
+
+- name: Get Jenkins Crumb
+  uri:
+    url: "http://{{ jenkins_domain }}/crumbIssuer/api/json"
+    return_content: yes
+  register: crumb_token
+
+- name: Automatically create Jenkins username & password credentials
+  uri:
+    body: |
+      json={
+        "": "0",
+        "credentials": {
+        "scope": "GLOBAL",
+        "id": "nexus_creds",
+        "username": "admin",
+        "password": "admin123",
+        "description": "nexus credentials",
+        "$class": "com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl"
+        }
+      }
+    method: POST
+    return_content: true
+    body_format: form-urlencoded
+    follow_redirects: all
+    headers:
+      Jenkins-Crumb: "{{ crumb_token.json.crumb }}"
+      Cookie: "{{ crumb_token.cookies_string }}"
+    url: "http://{{ jenkins_domain }}/credentials/store/system/domain/_/createCredentials"
+    validate_certs: false

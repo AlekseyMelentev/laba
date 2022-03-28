@@ -9,7 +9,7 @@
     group: "{{ansible_ssh_group}}"
   with_items:
     - "{{directory_deploy_nexus}}"
-    - "{{directory_deploy_volumes}}/nexus/nexus-data"
+    - "{{directory_deploy_volumes}}/nexus/nexus-data/etc"
   become: true
 
 - name: Upload updateNexus.sh
@@ -28,6 +28,14 @@
     group: "{{ansible_ssh_group}}"
     mode: '0644'
 
+- name: Copy nexus.properties
+  copy:
+    src: files/nexus.properties
+    dest: "{{directory_deploy_volumes}}/nexus/nexus-data/etc/"
+    owner: "{{ansible_ssh_user}}"
+    group: "{{ansible_ssh_group}}"
+    mode: '0644'
+
 - name: Execute docker-compose
   command: chdir="{{directory_deploy_nexus}}/" docker-compose up -d
   become: true
@@ -42,3 +50,40 @@
 
 - name: Restart nginx
   command: "docker restart nginx"
+  become: true
+
+- name: Pause play until a URL is reachable from this host
+  uri:
+    url: "http://{{nexus_domain}}"
+    follow_redirects: none
+    method: GET
+  register: _result
+  until: _result.status == 200
+  retries: 30 # 30 * 5 seconds = 150secs
+  delay: 5 # Every 5 seconds
+
+- name: Add nexus script
+  uri: 
+    url: http://{{nexus_domain}}/service/rest/v1/script
+    method: POST
+    user: "admin"
+    password: "admin123"
+    force_basic_auth: yes
+    return_content: yes
+    body_format: json
+    body: "{{ lookup('file','files/docker.json') }}"
+    status_code: 204
+  ignore_errors: true
+
+- name: Run nexus script for create docker registry repo
+  uri: 
+    url: http://{{nexus_domain}}/service/rest/v1/script/docker/run
+    method: POST
+    user: "admin"
+    password: "admin123"
+    force_basic_auth: yes
+    return_content: yes
+    headers:
+      Content-Type: text/plain
+    status_code: 200
+  ignore_errors: true

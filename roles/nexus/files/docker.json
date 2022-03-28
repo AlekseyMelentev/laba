@@ -1,0 +1,5 @@
+{
+    "name": "docker",
+    "type": "groovy",
+    "content": "security.setUserRoles('admin', ['nx-admin']); repository.createDockerHosted('dockerhost', 8283, null);"
+}

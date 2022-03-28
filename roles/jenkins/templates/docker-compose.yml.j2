@@ -15,6 +15,7 @@ services:
     volumes:
       - {{directory_deploy_volumes}}/jenkins/home:/var/jenkins_home
       - {{directory_deploy_volumes}}/jenkins/jobs:/usr/share/jenkins/ref/jobs
+      - {{directory_deploy_volumes}}/jenkins/daemon.json:/etc/docker/daemon.json
       - /var/run/docker.sock:/var/run/docker.sock
       - /etc/localtime:/etc/localtime:ro
 networks:

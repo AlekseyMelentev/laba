@@ -1,0 +1,18 @@
+---
+- name: Get Jenkins Crumb
+  uri:
+    url: "http://{{ jenkins_domain }}/crumbIssuer/api/json"
+    return_content: yes
+  register: crumb_token
+
+- name: Jenkins run job
+  uri:
+    method: POST
+    return_content: false
+    body_format: form-urlencoded
+    follow_redirects: all
+    headers:
+      Jenkins-Crumb: "{{ crumb_token.json.crumb }}"
+      Cookie: "{{ crumb_token.cookies_string }}"
+    url: "http://{{ jenkins_domain }}/job/my_job/build"
+    status_code: 201

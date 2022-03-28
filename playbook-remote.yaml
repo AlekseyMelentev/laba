@@ -6,3 +6,4 @@
     - role: proxy
     - role: jenkins
     - role: nexus
+    - role: result
