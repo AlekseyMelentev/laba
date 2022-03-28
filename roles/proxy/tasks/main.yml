@@ -49,13 +49,3 @@
 - name: Execute docker-compose final
   command: chdir="{{ directory_deploy_nginx }}/" docker-compose up -d
   become: true
-
-# - name: Add mappings to /etc/hosts
-#   blockinfile:
-#     path: /etc/hosts
-#     block: |
-#       127.0.0.1 {{ item }}
-#     marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item }}"
-#   loop:
-#     - "{{jenkins_domain}}"
-#     - "{{nexus_domain}}"
