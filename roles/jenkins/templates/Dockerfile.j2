@@ -1,0 +1,17 @@
+FROM jenkins/jenkins:lts
+USER root
+RUN apt-get update && apt-get install -y software-properties-common
+RUN add-apt-repository 'deb http://ppa.launchpad.net/ansible/ansible/ubuntu trusty main'
+RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 93C4A3FD7BB9C367
+RUN apt-get update && apt-get install -y build-essential ansible
+RUN groupadd --gid {{ansible_facts.getent_group['docker'][1]}} docker
+RUN curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add -
+RUN add-apt-repository \
+   "deb [arch=amd64] https://download.docker.com/linux/debian \
+   $(lsb_release -cs) \
+   stable"
+RUN apt-get update  -qq \
+    && apt-get install docker-ce docker-ce-cli containerd.io -y
+RUN usermod -aG docker jenkins
+USER jenkins
+RUN jenkins-plugin-cli --plugins configuration-as-code:1414.v878271fc496f workflow-job:1174.vdcb_d054cf74a_ git:4.11.0 docker-workflow:1.28

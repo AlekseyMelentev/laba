@@ -1,0 +1,14 @@
+---
+- hosts: localhost
+  connection: local
+  vars_files:
+    - global_vars.yaml
+  become: true
+  tasks:
+    - name: Add mappings to /etc/hosts
+      blockinfile:
+        path: /etc/hosts
+        marker: "# {mark} ANSIBLE MANAGED BLOCK"
+        block: |
+          {{ hostvars[groups['myhost'][0]].ansible_host }} {{ jenkins_domain }}
+          {{ hostvars[groups['myhost'][0]].ansible_host }} {{ nexus_domain }}

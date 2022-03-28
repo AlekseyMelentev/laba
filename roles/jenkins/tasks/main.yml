@@ -1,0 +1,66 @@
+---
+- name: Create jenkins dirs
+  file:
+    path: "{{item}}"
+    state: directory
+    mode: '0777'
+    recurse: yes
+    owner: "{{ansible_ssh_user}}"
+    group: "{{ansible_ssh_group}}"
+  with_items:
+    - "{{directory_deploy_jenkins}}"
+    - "{{directory_deploy_volumes}}/jenkins/home"
+    - "{{directory_deploy_volumes}}/jenkins/jobs/my_job"
+  become: true
+
+- name: Upload updateJenkins.sh
+  template:
+    src: "templates/updateJenkins.sh.j2"
+    dest: "{{directory_deploy_jenkins}}/updateJenkins.sh"
+    owner: "{{ansible_ssh_user}}"
+    group: "{{ansible_ssh_group}}"
+    mode: '0755'
+
+- name: Get docker group info
+  getent:
+    database: group
+    key: docker
+
+- name: Upload Dockerfile
+  template:
+    src: "templates/Dockerfile.j2"
+    dest: "{{directory_deploy_jenkins}}/Dockerfile"
+    owner: "{{ansible_ssh_user}}"
+    group: "{{ansible_ssh_group}}"
+    mode: '0644'
+
+- name: Upload docker-compose jenkins
+  template:
+    src: "templates/docker-compose.yml.j2"
+    dest: "{{directory_deploy_jenkins}}/docker-compose.yml"
+    owner: "{{ansible_ssh_user}}"
+    group: "{{ansible_ssh_group}}"
+    mode: '0644'
+
+- name: Copy config.xml
+  copy:
+    src: files/config.xml
+    dest: "{{directory_deploy_volumes}}/jenkins/jobs/my_job/"
+    owner: "{{ansible_ssh_user}}"
+    group: "{{ansible_ssh_group}}"
+    mode: '0644'
+
+- name: Execute docker-compose
+  command: chdir="{{ directory_deploy_jenkins }}/" docker-compose up -d
+  become: true
+
+- name: Upload jenkins.conf final public
+  template:
+    src: "templates/jenkins.conf.j2"
+    dest: "{{directory_deploy_volumes}}/nginx/conf.d/jenkins.conf"
+    owner: "{{ansible_ssh_user}}"
+    group: "{{ansible_ssh_group}}"
+    mode: '0644'
+
+- name: Restart nginx
+  command: "docker restart nginx"

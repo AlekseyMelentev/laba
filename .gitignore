@@ -1,0 +1,3 @@
+venv
+.git
+docker_clear_all.sh

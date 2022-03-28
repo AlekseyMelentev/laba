@@ -1,0 +1,61 @@
+---
+- name: Create nginx dirs
+  file:
+    path: "{{item}}"
+    state: directory
+    mode: '0744'
+    recurse: yes
+    owner: "{{ansible_ssh_user}}"
+    group: "{{ansible_ssh_group}}"
+  with_items:
+    - "{{directory_deploy_nginx}}"
+    - "{{directory_deploy_volumes}}/nginx/conf.d"
+    - "{{directory_deploy_volumes}}/nginx/www"
+  become: true
+
+- name: Copy index.html
+  copy:
+    src: files/index.html
+    dest: "{{directory_deploy_volumes}}/nginx/www/"
+    owner: "{{ansible_ssh_user}}"
+    group: "{{ansible_ssh_group}}"
+    mode: '0644'
+
+- name: Upload docker-compose
+  template:
+    src: "templates/docker-compose-nocertbot.yml.j2"
+    dest: "{{directory_deploy_nginx}}/docker-compose.yml"
+    owner: "{{ansible_ssh_user}}"
+    group: "{{ansible_ssh_group}}"
+    mode: '0644'
+
+- name: Upload root.conf without https
+  template:
+    src: "templates/root.conf-nohttps.j2"
+    dest: "{{directory_deploy_volumes}}/nginx/conf.d/root.conf"
+    owner: "{{ansible_ssh_user}}"
+    group: "{{ansible_ssh_group}}"
+    mode: '0644'
+
+- name: Create a docker network
+  docker_network:
+    name: proxy_network
+  become: true
+
+- name: Remove containers proxy
+  command: chdir="{{ directory_deploy_nginx }}/" docker-compose down -v
+  become: true
+
+- name: Execute docker-compose final
+  command: chdir="{{ directory_deploy_nginx }}/" docker-compose up -d
+  become: true
+
+# - name: Add mappings to /etc/hosts
+#   blockinfile:
+#     path: /etc/hosts
+#     block: |
+#       127.0.0.1 {{ item }}
+#     marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item }}"
+#   loop:
+#     - "{{jenkins_domain}}"
+#     - "{{nexus_domain}}"

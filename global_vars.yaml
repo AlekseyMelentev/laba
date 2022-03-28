@@ -1,0 +1,14 @@
+---
+
+ansible_ssh_user: "alma"
+ansible_ssh_group: "alma"
+
+root_domain: "example.com"
+jenkins_domain: "jenkins.{{root_domain}}"
+nexus_domain: "nexus.{{root_domain}}"
+
+root_directory_deploy: "/opt/sber"
+directory_deploy_jenkins: "{{root_directory_deploy}}/jenkins"
+directory_deploy_nexus: "{{root_directory_deploy}}/nexus"
+directory_deploy_nginx: "{{root_directory_deploy}}/nginx"
+directory_deploy_volumes: "{{root_directory_deploy}}/volumes"

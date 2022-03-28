@@ -1,0 +1,8 @@
+---
+- hosts: myhost
+  vars_files:
+    - global_vars.yaml
+  roles:
+    - role: proxy
+    - role: jenkins
+    - role: nexus

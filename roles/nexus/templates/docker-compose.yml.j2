@@ -1,0 +1,16 @@
+version: '3' 
+
+services:
+  jenkins:
+    image: 'sonatype/nexus3:latest'
+    container_name: nexus
+    restart: unless-stopped
+    hostname: {{nexus_domain}}
+    volumes:
+      - {{directory_deploy_volumes}}/nexus/nexus-data:/nexus-data
+      - /etc/localtime:/etc/localtime:ro
+
+networks:
+  default:
+    external:
+      name: proxy_network
