@@ -1,6 +1,6 @@
 # Laba
 
-Requirements for remote host: python3 and python3-pip
+Requirements for remote host: docker, python3 and python3-pip
 
 run commands on remote hosts:
 
