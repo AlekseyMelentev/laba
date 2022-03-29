@@ -16,3 +16,15 @@
       Cookie: "{{ crumb_token.cookies_string }}"
     url: "http://{{ jenkins_domain }}/job/my_job/build"
     status_code: 201
+
+- name: Wait for result
+  uri:
+    url: "http://{{nexus_domain}}/service/rest/v1/search?repository=dockerhost&name=alekseymelentev/hello-world"
+    follow_redirects: yes
+    method: GET
+    body_format: json
+    return_content: no
+  register: _result
+  until: _result | json_query('json.items') | length > 0
+  retries: 30 # 30 * 5 seconds = 150secs
+  delay: 5 # Every 5 seconds

@@ -14,7 +14,7 @@ cd laba
 ```bash
 python3 -m venv venv &&
   source venv/bin/activate &&
-  pip install ansible
+  pip install ansible jmespath
 ```
 
 ```bash
