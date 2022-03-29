@@ -3,6 +3,7 @@
   vars_files:
     - global_vars.yaml
   roles:
+    - role: prepare
     - role: proxy
     - role: jenkins
     - role: nexus

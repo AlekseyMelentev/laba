@@ -1,14 +1,8 @@
 # Laba
 
-Requirements for remote host: docker, python3 and python3-pip
+Requirements for remote host: python3 and python3-pip
 
-run commands on remote hosts:
-
-```bash
-pip install docker
-```
-
-change variables in global_vars.yaml file
+change variables in global_vars.yaml and invertory.txt files
 
 and run:
 
