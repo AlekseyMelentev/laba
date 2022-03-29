@@ -62,6 +62,18 @@
   retries: 30 # 30 * 5 seconds = 150secs
   delay: 5 # Every 5 seconds
 
+- name: Delete existing nexus script with PUT
+  uri: 
+    url: http://{{nexus_domain}}/service/rest/v1/script/docker
+    method: DELETE
+    user: "admin"
+    password: "admin123"
+    force_basic_auth: yes
+    return_content: yes
+    status_code:
+      - 204
+      - 404
+
 - name: Add nexus script
   uri: 
     url: http://{{nexus_domain}}/service/rest/v1/script
@@ -73,7 +85,6 @@
     body_format: json
     body: "{{ lookup('file','files/docker.json') }}"
     status_code: 204
-  ignore_errors: true
 
 - name: Run nexus script for create docker registry repo
   uri: 
@@ -86,4 +97,3 @@
     headers:
       Content-Type: text/plain
     status_code: 200
-  ignore_errors: true
